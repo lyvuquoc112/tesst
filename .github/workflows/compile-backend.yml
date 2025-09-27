@@ -33,7 +33,6 @@ jobs:
 
       # Build with Maven
      - name: Build with Maven
-      working-directory: ./tesst
       run: mvn clean install -DskipTests
 
         
