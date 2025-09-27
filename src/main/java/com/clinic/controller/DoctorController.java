@@ -19,29 +19,34 @@ public class DoctorController {
 
     /**
      * GET /api/doctors/{id}/availability?date=YYYY-MM-DD
-     * Yêu cầu: kiểm tra token, nhận tham số động (id, date) và trả về ResponseEntity.
+     * - Nhận id, date (tham số động)
+     * - Kiểm tra token đơn giản
+     * - Trả về danh sách slot dưới dạng String (ISO) để tránh lỗi kiểu dữ liệu
      */
     @GetMapping("/{id}/availability")
-    public ResponseEntity<?> getAvailability(
+    public ResponseEntity<List<String>> getAvailability(
             @PathVariable("id") Long doctorId,
             @RequestParam("date") String date,
             @RequestHeader(value = "Authorization", required = false) String token
     ) {
-        // Validate token rất đơn giản cho đề (nếu bạn có TokenService thì thay thế ở đây)
         if (token == null || !token.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Missing or invalid token");
+                    .build();
         }
 
         LocalDate parsedDate;
         try {
-            parsedDate = LocalDate.parse(date); // ISO-8601: 2025-09-27
+            parsedDate = LocalDate.parse(date); // định dạng YYYY-MM-DD
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid date format. Use YYYY-MM-DD.");
+            return ResponseEntity.badRequest().build();
         }
 
-        // ✅ kiểu dữ liệu phù hợp với service: List<LocalDateTime>
-        List<LocalDateTime> slots = doctorService.getAvailableSlots(doctorId, parsedDate);
+        // Service trả List<LocalDateTime> -> chuyển sang List<String> để khớp kiểu
+        List<String> slots = doctorService.getAvailableSlots(doctorId, parsedDate)
+                .stream()
+                .map(LocalDateTime::toString) // ví dụ "2025-09-27T09:30"
+                .toList();
+
         return ResponseEntity.ok(slots);
     }
 }
