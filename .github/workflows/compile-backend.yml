@@ -32,6 +32,8 @@ jobs:
             ${{ runner.os }}-maven-
 
       # Build with Maven
-      - name: Build with Maven
-        run: mvn clean install -DskipTests
+     - name: Build with Maven
+      working-directory: ./tesst
+      run: mvn clean install -DskipTests
+
         
